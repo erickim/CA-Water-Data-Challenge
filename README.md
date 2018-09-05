@@ -9,8 +9,7 @@ https://docs.google.com/spreadsheets/d/1NhC1WyYVj2K4N-JpoYQk_7W0ZAbDInjmiYirHUkB
 
 ## Ideas
 
-this is a document to put ideas of potential questions to answe
-r
+this is a document to put ideas of potential questions to answer
 
 from the website: "Imagine H2O will award $1,500 and select accelerator services to a team that best demonstrates _Impact, Scalability, Innovation_ in their solution."
 
