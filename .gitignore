@@ -3,3 +3,4 @@
 data/*
 .Rproj.user
 .httr-oauth
+!data/datasets-gsheets.xlsx
