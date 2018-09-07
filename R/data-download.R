@@ -33,12 +33,12 @@ doc_links[[17]] <- links %>% pluck(17)
 names(doc_links) <- doc %>%
   filter(grepl("http", `Link to Open Data Format`)) %>%
   pull(`Data Set Name`) %>%
-  gsub(pattern = "\\(|\\)|\\r\\n|-|\\*|,|:|\\/|\\'", replacement = "") %>%
+  gsub(pattern = "\\(|\\)|\\r\\n|-|\\*|,|:|\\/|\\'|\\.", replacement = "") %>%
   gsub(pattern = " ", replacement = "_")
 # no easily downloadable file for this one
 doc_links$USGS_Groundwater_Levels <- NULL
 
-for (i in names(doc_links)) {
+for (i in names(doc_links)[13:16]) {
   command <- paste0("mkdir data/", i)
   system(command)
 
