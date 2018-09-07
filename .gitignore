@@ -3,4 +3,5 @@
 data/*
 .Rproj.user
 .httr-oauth
+.Rhistory
 !data/datasets-gsheets.xlsx
