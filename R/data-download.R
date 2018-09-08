@@ -38,7 +38,7 @@ names(doc_links) <- doc %>%
 # no easily downloadable file for this one
 doc_links$USGS_Groundwater_Levels <- NULL
 
-for (i in names(doc_links)[13:16]) {
+for (i in names(doc_links)) {
   command <- paste0("mkdir data/", i)
   system(command)
 
