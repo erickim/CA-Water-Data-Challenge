@@ -1,6 +1,10 @@
+#""""""""""#
+# cleaning #
+#""""""""""#
+
 library(tidyverse)
 
-public_schools <- read_tsv("data/pubschls.txt")
+public_schools <- read_tsv("https://www.cde.ca.gov/schooldirectory/report?rid=dl1&tp=txt")
 
 public_schools_active <- public_schools %>%
   filter(StatusType == "Active") %>%
