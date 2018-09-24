@@ -1,0 +1,24 @@
+---
+title: "Drafting"
+author: "we are all eric."
+date: "9/20/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+source("R/water_regions_clean.R")
+source("R/pubschools_clean.R")
+source("R/water_quality_suppliers_clean.R")
+watersystems <- fetch_water_service_areas()
+schools <- fetch_active_public_schools()
+# analyses <- fetch_water_quality_analyses()
+```
+```{r}
+source()
+```
+
+
