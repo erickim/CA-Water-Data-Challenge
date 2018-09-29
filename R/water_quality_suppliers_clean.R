@@ -8,8 +8,25 @@ require(foreign) ## for read.dbf
 
 ## Data downloaded on 09/20/2018 from
 ## https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/EDTlibrary.html
+fetch_raw_dbfs <- function(dir = "data/water_quality/") {
+  link_chemical <- "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/documents/edtlibrary/chemical.zip"
+  link_siteloc <- "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/documents/edtlibrary/siteloc.zip"
+  link_watersys <- "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/documents/edtlibrary/watsys.zip"
+  link_storet <- "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/documents/edtlibrary/storet.zip"
+  
+  create_if_needed(dir)
+  c(link_chemical, link_siteloc, link_watersys, link_storet) %>%
+    walk2(c("chemical", "siteloc", "watsys", "storet"), 
+          function(link, name) {
+            zip_file <- paste0(dir, name, ".zip")
+            download.file(link, zip_file) 
+            unzip(zip_file, exdir = dir)
+            unlink(zip_file)
+          }
+    )
+}
 
-fetch_water_quality_analyses <- function(cache_level = c(0, 1, 2)) {
+fetch_water_quality_analyses <- function(cache_level = c('0', '1', '2')) {
     cache_level <- match.arg(cache_level)
     
     ## Water systems.
@@ -102,5 +119,7 @@ fetch_water_quality_analyses <- function(cache_level = c(0, 1, 2)) {
     
     if(cache_level > 0) 
         saveRDS(analyses, "data/water_quality/clean/analyses.Rds")
+    
+    return(analyses)
 }
 
