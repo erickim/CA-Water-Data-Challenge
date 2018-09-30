@@ -14,7 +14,7 @@ library(sf)
 fetch_water_service_areas <- function(link = "https://data.ca.gov/sites/default/files/service_areas.kml") {
   link %>%
     read_sf() %>%
-    transmute(region_id = pwsid,
+    transmute(region_id = str_sub(pwsid, start = 3),
               name = Name,
               natural_name = str_to_title(name),
               city = address_city_name,
@@ -28,7 +28,8 @@ fetch_water_service_areas <- function(link = "https://data.ca.gov/sites/default/
               owner_type_code = as.factor(owner_type_code),
               fed_type = as.factor(d_pws_fed_type_cd),
               population = d_population_count,
-              geometry)
+              geometry) %>%
+    unique.data.frame()
 }
 
 #############################

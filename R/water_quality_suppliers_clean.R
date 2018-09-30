@@ -29,21 +29,6 @@ fetch_raw_dbfs <- function(dir = "data/water_quality/") {
 fetch_water_quality_analyses <- function(cache_level = c('0', '1', '2')) {
     cache_level <- match.arg(cache_level)
     
-    ## Water systems.
-    systems <-  read.dbf("data/water_quality/watsys.dbf") %>%
-        as_tibble %>%
-        transmute(
-            system_id = as.character(SYSTEM_NO),
-            system_name = SYSTEM_NAM,
-            supplier = HQNAME,
-            population = as.numeric(POP_SERV),
-            num_connections = as.numeric(CONNECTION),
-            area = AREA_SERVE
-        )
-    
-    if(cache_level > 1) 
-        saveRDS(systems, "data/water_quality/clean/systems.Rds")
-    
     ## Drinking water sources.
     sources <-  read.dbf("data/water_quality/siteloc.dbf") %>%
         as_tibble %>%
@@ -68,7 +53,7 @@ fetch_water_quality_analyses <- function(cache_level = c('0', '1', '2')) {
                 NULL = "T",
                 waste = "W"
             )
-        ) %>% left_join(systems)
+        )
     
     if(cache_level > 1) 
         saveRDS(sources, "data/water_quality/clean/sources.Rds")

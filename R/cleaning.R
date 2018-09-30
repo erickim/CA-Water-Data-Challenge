@@ -18,7 +18,7 @@ source(glue("{here()}/R/convenience.R"))
 fetch_water_service_areas <- function(link = "https://data.ca.gov/sites/default/files/service_areas.kml") {
   link %>%
     read_sf() %>%
-    transmute(region_id = pwsid,
+    transmute(region_id = str_sub(pwsid, start = 3),
               name = Name,
               natural_name = str_to_title(name),
               city = address_city_name,
@@ -32,7 +32,8 @@ fetch_water_service_areas <- function(link = "https://data.ca.gov/sites/default/
               owner_type_code = as.factor(owner_type_code),
               fed_type = as.factor(d_pws_fed_type_cd),
               population = d_population_count,
-              geometry)
+              geometry) %>%
+    unique.data.frame()
 }
 
 fetch_active_public_schools <- function(tsv_link = "https://www.cde.ca.gov/schooldirectory/report?rid=dl1&tp=txt",
@@ -64,7 +65,7 @@ fetch_water_quality_analyses <- function(cache_level = c('0', '1', '2'),
     link_watersys <- "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/documents/edtlibrary/watsys.zip"
     link_storet <- "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/documents/edtlibrary/storet.zip"
     
-    create_if_needed(dir)
+    dir.recreate(dir)
     c(link_chemical, link_siteloc, link_watersys, link_storet) %>%
       walk2(c("chemical", "siteloc", "watsys", "storet"), 
             function(link, name) {
@@ -89,7 +90,7 @@ fetch_water_quality_analyses <- function(cache_level = c('0', '1', '2'),
       num_connections = as.numeric(CONNECTION),
       area = AREA_SERVE
     )
-  
+
   if(cache_level > 1) 
     saveRDS(systems, "data/water_quality/clean/systems.Rds")
   
@@ -117,7 +118,9 @@ fetch_water_quality_analyses <- function(cache_level = c('0', '1', '2'),
         NULL = "T",
         waste = "W"
       )
-    ) %>% left_join(systems)
+    ) %>%
+    filter(source_status %in% c("AR", "AT", "AU")) %>%
+    left_join(systems)
   
   if(cache_level > 1) 
     saveRDS(sources, "data/water_quality/clean/sources.Rds")

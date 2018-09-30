@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, message = F, warning = F, include=F}
 source("R/convenience.R")
 source("R/cleaning.R")
 watersystems <- fetch_water_service_areas()
@@ -18,7 +18,24 @@ analyses <- fetch_water_quality_analyses()
 ```
 
 ```{r}
+a <- analyses %$% unique(system_id) %>% sort()
+length(a)
 
+b <- watersystems %$% unique(region_id) %>% sort()
+length(b)
+
+d <- intersect(a, b)
+length(d)
+```
+
+
+```{r}
+ca_map <- 
+  maps::map("state", regions = "california", plot = F, fill = T) %>% 
+  sf::st_as_sf()
+watersystems %>%
+  ggplot(aes(fill = population)) +
+  geom_sf() #+geom_sf(data = ca_map)
 ```
 
 
