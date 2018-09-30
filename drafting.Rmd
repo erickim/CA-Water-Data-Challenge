@@ -18,7 +18,7 @@ analyses <- fetch_water_quality_analyses()
 ```
 
 ```{r}
-a <- analyses %$% unique(system_id) %>% sort()
+a <- systems %$% unique(system_id) %>% sort()
 length(a)
 
 b <- watersystems %$% unique(region_id) %>% sort()
@@ -27,6 +27,12 @@ length(b)
 d <- intersect(a, b)
 length(d)
 ```
+```{r}
+geo_matched <- geo_join(schools, watersystems, 'Longitude', 'Latitude')
+1 - (geo_matched %$% mean(is.na(region_id)))
+1 - (geo_matched %>% filter(EILCode == "ELEM") %$% mean(is.na(region_id)))
+```
+
 
 
 ```{r}

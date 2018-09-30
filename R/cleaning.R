@@ -18,7 +18,7 @@ source(glue("{here()}/R/convenience.R"))
 fetch_water_service_areas <- function(link = "https://data.ca.gov/sites/default/files/service_areas.kml") {
   link %>%
     read_sf() %>%
-    transmute(region_id = str_sub(pwsid, start = 3),
+    transmute(system_id = str_sub(pwsid, start = 3),
               name = Name,
               natural_name = str_to_title(name),
               city = address_city_name,
@@ -120,7 +120,7 @@ fetch_water_quality_analyses <- function(cache_level = c('0', '1', '2'),
       )
     ) %>%
     filter(source_status %in% c("AR", "AT", "AU")) %>%
-    left_join(systems)
+    left_join(systems, by = "system_id")
   
   if(cache_level > 1) 
     saveRDS(sources, "data/water_quality/clean/sources.Rds")
@@ -198,9 +198,25 @@ geo_join.test <- function(poly_df = watersystems) {
 }
 
 merge_water_data <- function(watersystems, schools, analyses) {
-  geo_join(schools, watersystems, 'Longitude', 'Latitude') %>%
-    left_join(analyses %>% mutate(region_id = paste0("CA", system_id)), 
-              by = "region_id")
+  pws_base <- 
+    watersystems %>% group_by(system_id) %>% nest(.key = "pws_info")
+  schools_nest <- 
+    schools %>% 
+    filter(SOCType == "Elementary Schools (Public)", 
+           ! all(is.na(AdmEmail1),
+                 is.na(AdmEmail2),
+                 is.na(AdmEmail3))) %>%
+    geo_join(watersystems, 'Longitude', 'Latitude') %>%
+    group_by(system_id) %>%
+    nest(.key = "schools")
+  analyses_nest <-
+    analyses %>% 
+    group_by(system_id) %>% 
+    nest(.key = "analyses")
+  water_data <-
+    pws_base %>%
+    inner_join(schools_nest) %>%
+    inner_join(analyses_nest)
 }
 
 fetch_clean_dataframe <- function() {
