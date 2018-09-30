@@ -265,6 +265,14 @@ get_nested_column <- function(water,
     extract2(1)
 }
 
+get_school_jointable <- function(water) {
+  st_geometry(water) <- NULL
+  water %>%
+    select(system_id, schools) %>%
+    unnest() %>%
+    st_as_sf()
+}
+
 summarize_water_data <- function(water, retain_geometry = T) {
   summary <-
     water %>%
@@ -276,20 +284,9 @@ summarize_water_data <- function(water, retain_geometry = T) {
               `Highest Percentage over MCL` = 
                 analyses %>% map_dbl(~ max(.$percent_over_mcl)),
               `Offending Chemical over MCL` = 
-                analyses %>% map_chr(~ as.character(.$chem_name)[which.max(.$percent_over_mcl)]),
-              `Proportion of Chemicals over RPHL` = 
-                analyses %>% map_dbl(~ mean(.$over_rphl)),
-              `Highest Percentage over RPHL` = 
-                analyses %>% map_dbl(~ max(.$percent_over_rphl)),
-              `Offending Chemical over RPHL` = 
-                analyses %>% map_chr(~ as.character(.$chem_name)[which.max(.$percent_over_rphl)])) %>%
+                analyses %>% map_chr(~ as.character(.$chem_name)[which.max(.$percent_over_mcl)])) %>%
     arrange(desc(`Proportion of Chemicals over MCL`))
   if (! retain_geometry) st_geometry(summary) <- NULL
   summary
-}
-
-## TODO (iff school-level geometries are required)
-unnest_water_data <- function(water) {
-  
 }
 #################

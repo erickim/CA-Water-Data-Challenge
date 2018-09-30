@@ -34,7 +34,8 @@ geo_matched <- geo_join(schools, watersystems, 'Longitude', 'Latitude')
 ```
 ```{r}
 water <- merge_water_data(watersystems, schools, analyses)
-View(summarize_water_data(water))
+View(summarize_water_data(water, retain_geometry = F))
+water %>% get_nested_column("4210006", analyses) -> a; View(a)
 ```
 
 
