@@ -12,6 +12,14 @@ library(forcats)
 ## For common R-specific tasks
 source(glue("{here()}/R/convenience.R"))
 
+CHEMICALS <- c("ARSENIC",
+               "BENZENE",
+               "TOLUENE",
+               "ETHYLBENZENE",
+               "TURBIDITY, LABORATORY",
+               "MERCURY",
+               "LEAD",
+               "CADMIUM")
 
 #############################
 #### DOWNLOAD & CLEANING ####
@@ -198,23 +206,43 @@ geo_join.test <- function(poly_df = watersystems) {
 }
 
 merge_water_data <- function(watersystems, schools, analyses) {
+  geometries <-
+    watersystems %>% select(system_id, geometry)
   pws_base <- 
-    watersystems %>% group_by(system_id) %>% nest(.key = "pws_info")
+    watersystems %>% select(-geometry) %>% group_by(system_id) %>% nest(.key = "pws_info")
   schools_nest <- 
     schools %>% 
     filter(SOCType == "Elementary Schools (Public)", 
-           ! all(is.na(AdmEmail1),
-                 is.na(AdmEmail2),
-                 is.na(AdmEmail3))) %>%
+           ! is.na(AdmEmail1)) %>%
+    transmute(School, 
+              City, County, 
+              Name = paste(AdmFName1, AdmLName1), 
+              Email = AdmEmail1,
+              Longitude, Latitude) %>%
     geo_join(watersystems, 'Longitude', 'Latitude') %>%
+    select(School, 
+           City, County, 
+           Name, Email,
+           system_id,
+           system_name = natural_name) %>%
     group_by(system_id) %>%
     nest(.key = "schools")
   analyses_nest <-
     analyses %>% 
+    filter(chem_name %in% CHEMICALS, sample_date >= ymd("2017-01-01"),
+           result > 0) %>% ## cuts down to 82935 rows (1% of total)
+    transmute(sample_date, 
+              chem_id, chem_name, chem_aka1, chem_type, chem_code,
+              result_modifier, chem_units, result,
+              mcl, percent_over_mcl = round(100*((result / mcl) - 1), 2),  over_mcl = result >= mcl,
+              rphl, percent_over_rphl = round(100*((result / rphl) - 1), 2), over_rphl = result >= rphl,
+              system_id, system_name = str_to_title(system_name), supplier,
+              source_type, source_name, source_status) %>%
     group_by(system_id) %>% 
     nest(.key = "analyses")
   water_data <-
-    pws_base %>%
+    geometries %>%
+    inner_join(pws_base) %>%
     inner_join(schools_nest) %>%
     inner_join(analyses_nest)
 }
@@ -225,5 +253,43 @@ fetch_clean_dataframe <- function() {
   analyses <- fetch_water_quality_analyses()
   
   merge_water_data(watersystems, schools, analyses)
+}
+
+get_nested_column <- function(water,
+                              desired_system_id = "0110005", ## East Bay Mud by default
+                              col = analyses) { ## col: one of (analyses, schools)
+  col <- enquo(col)
+  water %>% 
+    filter(system_id == desired_system_id) %>%
+    pull(!! col) %>%
+    extract2(1)
+}
+
+summarize_water_data <- function(water, retain_geometry = T) {
+  summary <-
+    water %>%
+    transmute(system_id, geometry,
+              `Number of Schools` = schools %>% map_int(nrow),
+              `Number of (Dangerous) Samples since 2017` = analyses %>% map_int(nrow),
+              `Proportion of Chemicals over MCL` = 
+                analyses %>% map_dbl(~ mean(.$over_mcl)),
+              `Highest Percentage over MCL` = 
+                analyses %>% map_dbl(~ max(.$percent_over_mcl)),
+              `Offending Chemical over MCL` = 
+                analyses %>% map_chr(~ as.character(.$chem_name)[which.max(.$percent_over_mcl)]),
+              `Proportion of Chemicals over RPHL` = 
+                analyses %>% map_dbl(~ mean(.$over_rphl)),
+              `Highest Percentage over RPHL` = 
+                analyses %>% map_dbl(~ max(.$percent_over_rphl)),
+              `Offending Chemical over RPHL` = 
+                analyses %>% map_chr(~ as.character(.$chem_name)[which.max(.$percent_over_rphl)])) %>%
+    arrange(desc(`Proportion of Chemicals over MCL`))
+  if (! retain_geometry) st_geometry(summary) <- NULL
+  summary
+}
+
+## TODO (iff school-level geometries are required)
+unnest_water_data <- function(water) {
+  
 }
 #################

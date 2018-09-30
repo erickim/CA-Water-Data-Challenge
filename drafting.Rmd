@@ -32,6 +32,11 @@ geo_matched <- geo_join(schools, watersystems, 'Longitude', 'Latitude')
 1 - (geo_matched %$% mean(is.na(region_id)))
 1 - (geo_matched %>% filter(EILCode == "ELEM") %$% mean(is.na(region_id)))
 ```
+```{r}
+water <- merge_water_data(watersystems, schools, analyses)
+View(summarize_water_data(water))
+```
+
 
 
 
