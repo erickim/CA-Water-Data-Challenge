@@ -1,0 +1,35 @@
+body {
+    font-family: monospace;
+}
+
+.navbar-brand {
+    font-size: 40px;
+    color: #1b96ff;
+    padding-left: 28px;
+}
+
+.section-header {
+    text-decoration: underline;
+}
+
+#top-banner {
+    margin-top: 51px;
+}
+
+#banner-overlay {
+    position: relative;
+    top: -300px;
+    right: 10%;
+    font-size: 40px;
+    color: white;
+    text-align: right;
+}
+
+/* ------------------- */
+/* bootstrap overrides */
+/* ------------------- */
+
+.container-fluid { 
+    padding-left: 0;
+    padding-right: 0;
+}
