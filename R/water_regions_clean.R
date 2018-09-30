@@ -11,10 +11,10 @@ library(sf)
 
 #############################
 #### DOWNLOAD & CLEANING ####
-read_water_service_areas <- function(link = "https://data.ca.gov/sites/default/files/service_areas.kml") {
+fetch_water_service_areas <- function(link = "https://data.ca.gov/sites/default/files/service_areas.kml") {
   link %>%
     read_sf() %>%
-    transmute(region_id = pwsid,
+    transmute(region_id = str_sub(pwsid, start = 3),
               name = Name,
               natural_name = str_to_title(name),
               city = address_city_name,
@@ -28,7 +28,8 @@ read_water_service_areas <- function(link = "https://data.ca.gov/sites/default/f
               owner_type_code = as.factor(owner_type_code),
               fed_type = as.factor(d_pws_fed_type_cd),
               population = d_population_count,
-              geometry)
+              geometry) %>%
+    unique.data.frame()
 }
 
 #############################
@@ -45,7 +46,7 @@ geo_join <- function(points_df, poly_df,
 
 geo_join.test <- function(poly_df = watersystems) {
   fake_data <- 
-    data_frame(id = c("My House in Berkeley", "Should by Linda Vista"),
+    data_frame(id = c("My House in Berkeley", "Should be Linda Vista"),
                lat = c(37.863444, 36.42647),
                lon = c(-122.256300, -120.0538)) %>% 
     st_as_sf(coords = c("lon", "lat"), 

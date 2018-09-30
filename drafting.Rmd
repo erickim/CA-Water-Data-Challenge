@@ -1,0 +1,41 @@
+---
+title: "Drafting"
+author: "we are all eric."
+date: "9/20/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = F, warning = F, include=F}
+source("R/convenience.R")
+source("R/cleaning.R")
+watersystems <- fetch_water_service_areas()
+schools <- fetch_active_public_schools()
+analyses <- fetch_water_quality_analyses()
+```
+
+```{r}
+a <- analyses %$% unique(system_id) %>% sort()
+length(a)
+
+b <- watersystems %$% unique(region_id) %>% sort()
+length(b)
+
+d <- intersect(a, b)
+length(d)
+```
+
+
+```{r}
+ca_map <- 
+  maps::map("state", regions = "california", plot = F, fill = T) %>% 
+  sf::st_as_sf()
+watersystems %>%
+  ggplot(aes(fill = population)) +
+  geom_sf() #+geom_sf(data = ca_map)
+```
+
+
