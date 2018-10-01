@@ -1,145 +1,81 @@
-require(shiny)
+require(sf)
+require(readr)
+require(dplyr)
+require(tidyr)
+require(purrr)
+require(leaflet)
 
-nav <- tags$nav
-button <- tags$button
-ul <- tags$ul
-li <- tags$li
+source("helpers.R")
+source("ui.R")
 
-source("html_modules.R")
+water <- read_rds("data/water.rds")
 
-ui <- fluidPage(
+schools <- water %>%
+    unnest(schools) %>%
+    unite(school_system, School, system_name, sep = ", ", remove=FALSE)
 
-    includeCSS("css/main.css"),
+school_choices <- schools %>% pull(school_system) %>% unique
 
-    tags$script(src = "js/scroll.js"),
+water_summary <- summarize_water_data(water)
+st_geometry(water_summary) <- NULL ## extract tibble
 
-    nav(
-        class = "navbar navbar-default navbar-fixed-top",
-        div(
-            
-            class = "container-fluid",
-            
-            div(
-                class = "navbar-header",
+water <- water %>%
+    left_join(water_summary)
 
-                ## mobile nav
-                button(
-
-                    ## element attrs
-                    class = "navbar-toggle collapsed",
-                    type = "button",
-                    `data-toggle` = "collapse",
-                    `data-target`="#main-nav",
-                    `aria-expanded`="false",
-
-                    ## children
-                    span(class="sr-only", "Toggle navigation"),
-                    span(class="icon-bar"),
-                    span(class="icon-bar"),
-                    span(class="icon-bar")
-                    
-                ), ## end button.navbar-toggle.collapsed
-
-                a(class = "navbar-brand", href="#", "More than a Meter")
-
-            ), ## end div.navbar-header
-
-            div(
-                id = "main-nav",
-                class = "collapse navbar-collapse ", 
-                
-                ul(
-                    class = "nav navbar-nav",
-                    li(
-                        a("About", href="#about"),
-                        class="active"
-                    ),
-                    li(
-                        a("The Data", href="#data")
-                    )
-                )
-            ) ## end div#main-nav
-
-        ) ## end div.container-fluid
-    
-    ),
-
-    div(
-        id = "top-banner",
-        class = "container-fluid",
-        ##top = "51px",
-        ##left = 0,
-        ##width = "100%",
-        
-        img(
-            ## source: https://www.choa.org/~/media/images/Childrens/heroes/medical-services/sports-medicine/boy-water-fountain-outside.png
-            src = "images/boy-water-fountain-outside.png",
-            alt = "A boy drinking water from a water fountain.",
-            class = "img-responsive",
-            width = "100%",
-            height = "auto"
-        ),
-        div("All children deserve clean drinking water", id = "banner-overlay")
-    ),
-
-    section_block(
-
-        id = "problem",
-
-        header_text = "The Problem",
-
-        div(
-            class = "col-xs-4 text-center",
-            img(class = "img-circle", src = "https://via.placeholder.com/140x140"),
-            p("Part 1")
-        ),
-        div(
-            class = "col-xs-4 text-center",
-            img(class = "img-circle", src = "https://via.placeholder.com/140x140"),
-            p("Part 2")
-        ),
-        div(
-            class = "col-xs-4 text-center",
-            img(class = "img-circle", src = "https://via.placeholder.com/140x140"),
-            p("Part 3")
-        ),
-        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ut nibh mollis, condimentum ligula sed, venenatis dolor. Phasellus non purus in ex tristique tempor non a odio. Vivamus lobortis tincidunt nibh. Curabitur elit est, tempus in ante at, egestas commodo augue. Maecenas finibus, magna ut suscipit convallis, nunc elit posuere ligula, a venenatis nisl ante nec augue. Aenean consectetur euismod semper. Proin euismod euismod massa. Nulla facilisi. Morbi semper odio lectus, ut lacinia tellus finibus blandit. Aenean eget felis tristique, aliquam lacus eu, semper neque. Vivamus non turpis non lectus iaculis congue. Nunc rutrum ut purus nec faucibus. Cras sed nisl dolor.")
-        
-    ),
-
-    section_block(
-
-        id = "about",
-
-        header_text = "About the Water Alarm for Children",
-
-        div(
-            p("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ut nibh mollis, condimentum ligula sed, venenatis dolor. Phasellus non purus in ex tristique tempor non a odio. Vivamus lobortis tincidunt nibh. Curabitur elit est, tempus in ante at, egestas commodo augue. Maecenas finibus, magna ut suscipit convallis, nunc elit posuere ligula, a venenatis nisl ante nec augue. Aenean consectetur euismod semper. Proin euismod euismod massa. Nulla facilisi. Morbi semper odio lectus, ut lacinia tellus finibus blandit. Aenean eget felis tristique, aliquam lacus eu, semper neque. Vivamus non turpis non lectus iaculis congue. Nunc rutrum ut purus nec faucibus. Cras sed nisl dolor."),
-            p("Pellentesque vel velit pulvinar, feugiat turpis non, dictum ante. Vestibulum id interdum ex, vel convallis nunc. Nunc euismod a mi sit amet venenatis. Ut eget sem vitae quam condimentum ultrices. Aliquam in interdum sapien, id ultrices massa. Sed accumsan, neque eu viverra fermentum, nibh nibh scelerisque ex, ut sodales erat felis cursus ex. Donec venenatis pharetra ex ut feugiat. Nam tristique sagittis justo eu pellentesque. Integer placerat felis ut lorem elementum, sed commodo tortor fermentum. Donec volutpat lorem vitae erat lacinia tristique. Nullam sem mauris, vestibulum condimentum lectus blandit, efficitur malesuada libero. Donec ullamcorper consequat velit, sed congue urna vehicula eu.")
-        )
-    ),
-
-    section_block(
-
-        id = "data",
-
-        header_text = "The Data",
-
-        sidebarLayout(
-            sidebarPanel(
-
-            ),
-            mainPanel(
-
-            )
-        )
-
-    )
-
-)
+ui <- makeUI(school_choices)
 
 server <- function(input, output) {
+
+    filteredData <- reactive({
+        these_schools <- input$school_search
+
+        if (length(these_schools) == 0)
+            return(water)
+        else {
+            these_systems <- schools %>%
+                filter(school_system %in% these_schools) %>%
+                pull(system_id)
+            return(water %>% filter(system_id %in% these_systems))
+        }
+    })
     
+    output$ca_map <- renderLeaflet({
+
+        bbox <- as.vector(st_bbox(water))
+
+        leaflet(water) %>%
+            addTiles() %>%
+            fitBounds(bbox[1], bbox[2], bbox[3], bbox[4])
+
+    })
+
+    observe({
+
+        this_data = filteredData()
+        bbox <- as.vector(st_bbox(this_data))
+
+        leafletProxy("ca_map", data = this_data) %>%
+            clearShapes() %>%
+            addPolygons(
+                popup = ~paste0(
+                           "<h3>", natural_name, "</h3>",
+                           "<p>",
+                           "Number of Schools: ", `Number of Schools`,
+                           "<br>",
+                           "Number of (Dangerous) Samples since 2017: ", `Number of (Dangerous) Samples since 2017`,
+                           "<br>",
+                           "Proportion of Chemicals over MCL: ", round(`Proportion of Chemicals over MCL`,
+                                                                       digits = 2),
+                           "<br>",
+                           "Highest Percentage over MCL: ", `Highest Percentage over MCL`,
+                           "<br>",
+                           "Offending Chemical over MCL: ", `Offending Chemical over MCL`,
+                           "</p>"
+                       )
+            ) %>%
+            fitBounds(bbox[1], bbox[2], bbox[3], bbox[4])
+
+    })
 }
 
 shinyApp(ui, server)

@@ -1,9 +1,12 @@
+@import url('https://fonts.googleapis.com/css?family=K2D');
+
 body {
-    font-family: monospace;
+    font-family: 'K2D', sans-serif;
+    font-size: 18px;
 }
 
 .navbar-brand {
-    font-size: 40px;
+    font-size: 45px;
     color: #1b96ff;
     padding-left: 28px;
 }
@@ -12,17 +15,79 @@ body {
     text-decoration: underline;
 }
 
+.leaflet-popup-content p {
+    font-size: 14px;
+}
+
 #top-banner {
     margin-top: 51px;
+    margin-bottom: -125px;
+}
+
+#top-banner > img {
+    filter: brightness(70%);
 }
 
 #banner-overlay {
     position: relative;
     top: -300px;
     right: 10%;
-    font-size: 40px;
+    font-size: 45px;
     color: white;
     text-align: right;
+}
+
+#controls {
+    z-index: 10;
+    padding: 10px;
+}
+
+#see-the-data {
+    position: relative;
+    top: -140px;
+    text-align: center;
+}
+
+#see-the-data > a {
+    color: white;
+    text-decoration: none;
+}
+
+.scroll-down {
+    margin: 0 auto;
+    text-decoration: none;
+    text-shadow: 0;
+    width: 13px;
+    height: 13px;
+    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fff;
+    -webkit-transform: translate(-50%, 0%) rotate(45deg);
+    -moz-transform: translate(-50%, 0%) rotate(45deg);
+    transform: translate(-50%, 0%) rotate(45deg);
+    -webkit-animation: fade_move_down 4s ease-in-out infinite;
+    -moz-animation:    fade_move_down 4s ease-in-out infinite;
+    animation:         fade_move_down 4s ease-in-out infinite;
+}
+
+/*animated scroll arrow animation*/
+@-webkit-keyframes fade_move_down {
+    0%   { -webkit-transform:translate(0,-10px) rotate(45deg); opacity: 0;  }
+    50%  { opacity: 1;  }
+    100% { -webkit-transform:translate(0,10px) rotate(45deg); opacity: 0; }
+}
+@-moz-keyframes fade_move_down {
+    0%   { -moz-transform:translate(0,-10px) rotate(45deg); opacity: 0;  }
+    50%  { opacity: 1;  }
+    100% { -moz-transform:translate(0,10px) rotate(45deg); opacity: 0; }
+}
+@keyframes fade_move_down {
+    0%   { transform:translate(0,-10px) rotate(45deg); opacity: 0;  }
+    50%  { opacity: 1;  }
+    100% { transform:translate(0,10px) rotate(45deg); opacity: 0; }
+}
+
+#get-involved {
+    margin-bottom: 30px;
 }
 
 /* ------------------- */
