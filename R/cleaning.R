@@ -207,7 +207,7 @@ geo_join.test <- function(poly_df = watersystems) {
 
 merge_water_data <- function(watersystems, schools, analyses) {
   geometries <-
-    watersystems %>% select(system_id, geometry)
+    watersystems %>% select(system_id, natural_name, geometry)
   pws_base <- 
     watersystems %>% select(-geometry) %>% group_by(system_id) %>% nest(.key = "pws_info")
   schools_nest <- 
