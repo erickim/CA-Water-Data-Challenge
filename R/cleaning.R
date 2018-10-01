@@ -229,13 +229,12 @@ merge_water_data <- function(watersystems, schools, analyses) {
     nest(.key = "schools")
   analyses_nest <-
     analyses %>% 
-    filter(chem_name %in% CHEMICALS, sample_date >= ymd("2017-01-01"),
+    filter(chem_name %in% CHEMICALS, sample_date >= ymd("2017-01-01"), ## (1.6% of total)
            result > 0) %>% ## cuts down to 82935 rows (1% of total)
     transmute(sample_date, 
               chem_id, chem_name, chem_aka1, chem_type, chem_code,
               result_modifier, chem_units, result,
               mcl, percent_over_mcl = round(100*((result / mcl) - 1), 2),  over_mcl = result >= mcl,
-              rphl, percent_over_rphl = round(100*((result / rphl) - 1), 2), over_rphl = result >= rphl,
               system_id, system_name = str_to_title(system_name), supplier,
               source_type, source_name, source_status) %>%
     group_by(system_id) %>% 

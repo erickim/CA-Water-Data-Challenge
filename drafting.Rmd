@@ -35,7 +35,9 @@ geo_matched <- geo_join(schools, watersystems, 'Longitude', 'Latitude')
 ```{r}
 water <- merge_water_data(watersystems, schools, analyses)
 View(summarize_water_data(water, retain_geometry = F))
-water %>% get_nested_column("4210006", analyses) -> a; View(a)
+water %>% get_nested_column("4210006", analyses) -> analysis; View(analysis)
+
+get_school_jointable(water)
 ```
 
 
@@ -49,5 +51,65 @@ watersystems %>%
   ggplot(aes(fill = population)) +
   geom_sf() #+geom_sf(data = ca_map)
 ```
+
+```{r}
+tic("Entire Run")
+source("R/convenience.R")
+source("R/cleaning.R")
+source("R/email.R")
+
+tic("Fetching data")
+tic("Fetching watersystems")
+watersystems <- fetch_water_service_areas()
+toc()
+tic("Fetching schools")
+schools <- fetch_active_public_schools()
+toc()
+tic("Fetching water quality samples")
+analyses <- fetch_water_quality_analyses()
+toc()
+toc()
+
+tic("Merging watersystems, schools, and chemical samples")
+water <- merge_water_data(watersystems, schools, analyses)
+toc()
+
+tic("Email Body Generation")
+emails <- generate_content(water)
+toc()
+
+tic("Email Sending")
+send_emails(emails, dry_run = T)
+toc()
+toc()
+```
+
+```{r}
+tic("Entire Run")
+source("R/convenience.R")
+source("R/cleaning.R")
+source("R/email.R")
+
+tic("Fetching data")
+tic("Fetching watersystems")
+watersystems <- fetch_water_service_areas()
+toc()
+tic("Fetching schools")
+schools <- fetch_active_public_schools()
+toc()
+tic("Fetching water quality samples")
+analyses <- fetch_water_quality_analyses()
+toc()
+toc()
+
+tic("Merging watersystems, schools, and chemical samples")
+water <- merge_water_data(watersystems, schools, analyses)
+toc()
+
+tic("Sending Emails")
+send_batch_email(water, dry_run = T)
+toc()
+```
+
 
 
