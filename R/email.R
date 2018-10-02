@@ -23,7 +23,7 @@ generate_content <- function(water) {
       analysis_summary %$% unique(system_name)
     
     header <-
-      glue("We are a group of statistical consultants and biostatisticians behind a product called The Water Alarm for Children. Using the most recent state-level water test data (https://data.ca.gov/dataset/drinking-water-%E2%80%93-laboratory-water-quality-results), The Water Alarm for Children has detected water safety violations that may put students at your school at risk.\n\nWe are contacting you because you are part of the {system_name} Public Water Service region, and recent tests have indicated unsafe levels of known hazardous contamination in your drinking water supply - specifically, contaminants that are known to have especially harmful impacts on children.")
+      glue("We are a group of statistical consultants and biostatisticians behind a product called The Water Alarm for Children.\n\nWe are contacting you because you are part of the {system_name} Public Water Service region, and recent tests (https://data.ca.gov/dataset/drinking-water-%E2%80%93-laboratory-water-quality-results) have indicated unsafe levels of known hazardous contamination in your drinking water supply - specifically, contaminants that are known to have especially harmful impacts on children.")
     
     generate_bullet <- function(system_name,
                                 chem_name, 
