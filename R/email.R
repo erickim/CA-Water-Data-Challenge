@@ -23,7 +23,7 @@ generate_content <- function(water) {
       analysis_summary %$% unique(system_name)
     
     header <-
-      glue("We are a group of statistical consultants behind a product called More than a Meter.\n\nWe are contacting you because you are part of the {system_name} Public Water Service region, and recent tests have indicated unsafe levels of known hazardous contamination in your drinking water supply - specifically, contaminants that are known to have especially harmful impacts on children.")
+      glue("We are a group of statistical consultants and biostatisticians behind a product called The Water Alarm for Children. Using the most recent state-level water test data (https://data.ca.gov/dataset/drinking-water-%E2%80%93-laboratory-water-quality-results), The Water Alarm for Children has detected water safety violations that may put students at your school at risk.\n\nWe are contacting you because you are part of the {system_name} Public Water Service region, and recent tests have indicated unsafe levels of known hazardous contamination in your drinking water supply - specifically, contaminants that are known to have especially harmful impacts on children.")
     
     generate_bullet <- function(system_name,
                                 chem_name, 
@@ -38,23 +38,20 @@ generate_content <- function(water) {
                                    ". There is no safe level of consumption for this contaminant", 
                                    paste0(" by ", recent_result_percent_over_mcl, "%"))
       
-      effects <- function(chem_name) {
-        chem_name %>% {case_when(
-          . == "turbidity" ~ "bacterial growth",
-          . == "arsenic" ~ "death")}}
-      
       consumes <- function(chem_name, recent_result) {
-        if (chem_name == "turbidity") return("")
-        else
-          glue("Currently, an average child at your school may consume as much as {1.5*recent_result} micrograms of {chem_name} in a school day.")
+        if (chem_name == "turbidity") 
+          return("")
+        glue("Currently, an average child at your school may consume as much as {1.5*recent_result} micrograms of {chem_name} in a school day.")
       }
       
       in_the_last_two_years <- function(chem_name, percent_samples_over_mcl) {
-        if (chem_name == "lead") return("")
+        if (chem_name == "lead") 
+          return("")
         glue("In the last two years, {percent_samples_over_mcl}% of samples in your region have breached this limit. ")
       }
       glue("The most recent test for {chem_name} in your water supply (conducted on {recent_test_date}) indicates that {chem_name} exceeds the current US EPA Maximal Contaminant Level{percent_statement}. {in_the_last_two_years(chem_name, percent_samples_over_mcl)}{consumes(chem_name, recent_result)}")
     }    
+    
     bullets <-
       analysis_summary %>%
       mutate(chem_name = as.character(chem_name), recent_test_date = as.character(recent_test_date)) %>%
@@ -62,7 +59,7 @@ generate_content <- function(water) {
       paste(collapse = "\n")
     
     guidance <-
-      "In light of these safety hazards, we urge you to consider providing bottled water for the most affected children at your school."
+      "In light of these safety hazards, we urge you to consider providing water bottled from other sources for the children at your school. We have also created a Facebook group (https://www.facebook.com/groups/more.than.a.meter/) for schools, parents, and researchers to get involved and start fixing these water safety hazards, school by school. Please alert your PTA and any other members of your community who share an interest in ensuring the safety of the public water supply for California's children."
     
     body <- 
       glue("{header}\n\n{bullets}\n\n{guidance}")
@@ -80,22 +77,6 @@ generate_content <- function(water) {
     select(to, school, body)
 }
 
-### Dear XY,
-### We are More than a Meter (LLC) (Pending). We love children and kids.
-### We have written a system to XYZ
-### We have detected you have X levels of chemical X in your water supply, 
-##### Z% higher than the maximal contaminent level set by the California Dept of Public Health 
-#### We have also detected Z levels of chemical Y.
-### An average child at your school may consume as much as ZZZ of chemical X and SSS of chemical Y  in a school day. This has risks XYZ, especially for children.
-### Additionally, chemical Z has known carcinagenic effects, especially on children.
-### We are telling you this because we believe you are in the right capacity to help minimize exposure and alert the right bodies of power to this issue.
-### Some immediate actions you can take are:
-#### - Give bottled water
-#### - Alert PTA
-#### - Alert your local Congressperson and/or Senator.
-#### - If your budget allows for it, consider implementing a Z filter. This may help with these chemicals X.
-##### Get to it, we wish you a wild and wonderous quest.
-### Godspeed, More than a Meter LLC
 send_email <- function(to = "contact@arun.run", 
                        school = "Travilah Elementary School", 
                        body = "Nothing to see here...") {
