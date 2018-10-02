@@ -83,7 +83,7 @@ send_email <- function(to = "contact@arun.run",
   mime(To = to,
        From = "arun.ramamurthy.md@gmail.com",
        Subject = glue("Water Safety Alert Concerning {school}"),
-       body = glue("To the Main Office of {school}:\n\n{body}\n\nWarm regards,\nMore than a Meter")) %>%
+       body = glue("To the Main Office of {school}:\n\n{body}\n\nA description and visualization of The Water Alarm for Children can be accessed at https://counterfactuals.shinyapps.io/more-than-a-meter/.\n\nWarm regards,\nMore than a Meter")) %>%
     send_message()
 }
 
